@@ -35,6 +35,7 @@ A `Pass` has `create(gl)` returning a `draw(frame)` function, compiled once.
 
 - Regular passes read `frame.input` and draw into `frame.output`.
 - `overlay: true` passes blend directly onto the current image (no input).
+- Multi-step passes can use `frame.scratch(key, scale)` for intermediate targets.
 
 The quickest way is `shaderPass(glsl, uniforms)`; see `shaders/passHeader.ts` for
 what's in scope (`u_input`, `video(uv)`, `landmark(i, face)`, `u_time`, ...).

@@ -1,4 +1,5 @@
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
+import type { RenderTarget } from "./core/target";
 
 export type Vec2 = [number, number];
 export type Vec4 = [number, number, number, number];
@@ -19,6 +20,7 @@ export interface Frame {
   faces: readonly ActiveFace[];
   input: WebGLTexture | null;
   output: WebGLFramebuffer;
+  scratch: (key: symbol, scale?: number) => RenderTarget;
 }
 
 export type Draw = (frame: Frame) => void;

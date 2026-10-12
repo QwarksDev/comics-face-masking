@@ -70,6 +70,7 @@ export class Renderer {
       faces: this.landmarks.active,
       input: null,
       output: src.framebuffer,
+      scratch: (key, scale) => this.targets.scratch(key, scale),
     };
 
     for (const pass of passes) {

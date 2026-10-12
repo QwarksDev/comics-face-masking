@@ -5,6 +5,8 @@ export interface Connection {
   end: number;
 }
 
+export const FACE_OVAL: readonly Connection[] =
+  FaceLandmarker.FACE_LANDMARKS_FACE_OVAL;
 export const FACE_CONTOURS: readonly Connection[] =
   FaceLandmarker.FACE_LANDMARKS_CONTOURS;
 export const IRISES: readonly Connection[] = [
