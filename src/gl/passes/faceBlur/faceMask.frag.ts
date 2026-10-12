@@ -37,7 +37,7 @@ float faceMask(vec2 p, int face) {
 
 void main() {
   vec2 p = v_uv * u_resolution;
-  float mask = 0.0;
+  float mask = u_faceCount == 0 ? 1.0 : 0.0;
   for (int f = 0; f < u_faceSlots; f++) {
     if (faceActive(f)) mask = max(mask, faceMask(p, f));
   }

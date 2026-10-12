@@ -43,7 +43,7 @@ export function faceBlurPass(
       const blurred = gaussianBlur(gl, blur, sigma, downsample);
 
       return (frame) => {
-        const texture = frame.faces.length > 0 ? blurred(frame) : null;
+        const texture = blurred(frame);
         gl.activeTexture(gl.TEXTURE0 + UNIT.input);
         gl.bindTexture(gl.TEXTURE_2D, frame.input);
         gl.activeTexture(gl.TEXTURE0 + UNIT.aux);
