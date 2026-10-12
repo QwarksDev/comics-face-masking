@@ -6,8 +6,12 @@ import { LINES_FS } from "./lines.frag";
 import { LINES_VS } from "./lines.vert";
 
 export interface LandmarkLinesOptions {
-  color?: Vec4;
+  color?: Vec4 | readonly Vec4[];
   width?: number;
+}
+
+function isPalette(color: Vec4 | readonly Vec4[]): color is readonly Vec4[] {
+  return Array.isArray(color[0]);
 }
 
 function createEdgeVao(
@@ -32,6 +36,7 @@ export function landmarkLinesPass(
   connections: readonly Connection[],
   { color = [0, 1, 0.5, 1], width = 2 }: LandmarkLinesOptions = {},
 ): Pass {
+  const colors = isPalette(color) ? color : [color];
   return {
     overlay: true,
     create(gl) {
@@ -39,7 +44,6 @@ export function landmarkLinesPass(
       const loc = uniformLocator(gl, program);
       gl.useProgram(program);
       gl.uniform1i(loc("u_landmarks"), UNIT.landmarks);
-      gl.uniform4fv(loc("u_color"), color);
       gl.uniform1f(loc("u_width"), width);
       const vao = createEdgeVao(gl, program, connections);
 
@@ -49,6 +53,7 @@ export function landmarkLinesPass(
         gl.uniform2fv(loc("u_resolution"), frame.resolution);
         for (let face = 0; face < frame.faceCount; face++) {
           gl.uniform1i(loc("u_face"), face);
+          gl.uniform4fv(loc("u_color"), colors[face % colors.length]);
           gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, connections.length);
         }
       };
