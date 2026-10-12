@@ -4,6 +4,7 @@ import type Webcam from "react-webcam";
 import { TRACKING } from "../config/tracking";
 import { Renderer } from "../gl/Renderer";
 import type { Pass } from "../gl/types";
+import { toDetections } from "../tracking/detection";
 import { FaceTracker } from "../tracking/FaceTracker";
 
 export function useRenderLoop(
@@ -34,8 +35,8 @@ export function useRenderLoop(
       ) {
         lastVideoTime = video.currentTime;
         const now = performance.now();
-        const { faceLandmarks } = landmarker.detectForVideo(video, now);
-        renderer.setFaces(tracker.update(faceLandmarks, now));
+        const result = landmarker.detectForVideo(video, now);
+        renderer.setFaces(tracker.update(toDetections(result), now));
         renderer.render(video, passes, now / 1000);
       }
       rafId = requestAnimationFrame(tick);

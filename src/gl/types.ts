@@ -6,12 +6,14 @@ export type Vec4 = [number, number, number, number];
 
 export interface SlotFace {
   landmarks: readonly NormalizedLandmark[];
+  blendshapes: Float32Array;
   held: boolean;
 }
 
 export interface ActiveFace {
   slot: number;
   held: boolean;
+  blendshapes: Float32Array;
 }
 
 export interface Frame {

@@ -1,9 +1,8 @@
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { type FaceBox, faceBox } from "./faceBox";
 import { matchFaces } from "./matchFaces";
+import type { Detection } from "./detection";
 
-export interface TrackedFace {
-  landmarks: readonly NormalizedLandmark[];
+export interface TrackedFace extends Detection {
   held: boolean;
 }
 
@@ -29,8 +28,8 @@ export class FaceTracker {
     return this.tracks;
   }
 
-  update(detections: readonly NormalizedLandmark[][], now: number) {
-    const boxes = detections.map(faceBox);
+  update(detections: readonly Detection[], now: number) {
+    const boxes = detections.map((d) => faceBox(d.landmarks));
     const assignment = matchFaces(
       boxes,
       this.tracks.map((t) => t?.box ?? null),
@@ -61,12 +60,8 @@ export class FaceTracker {
     return this.slots;
   }
 
-  private track(
-    landmarks: readonly NormalizedLandmark[],
-    box: FaceBox,
-    now: number,
-  ): Track {
-    return { landmarks, box, lastSeen: now, held: false };
+  private track(detection: Detection, box: FaceBox, now: number): Track {
+    return { ...detection, box, lastSeen: now, held: false };
   }
 
   private freeSlot(seen: ReadonlySet<number>): number {

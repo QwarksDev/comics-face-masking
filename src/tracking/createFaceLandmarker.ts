@@ -7,5 +7,6 @@ export async function createFaceLandmarker(): Promise<FaceLandmarker> {
     baseOptions: { modelAssetPath: FACE_LANDMARKER.modelUrl, delegate: "GPU" },
     runningMode: "VIDEO",
     numFaces: FACE_LANDMARKER.numFaces,
+    outputFaceBlendshapes: true,
   });
 }

@@ -20,7 +20,8 @@ export class LandmarkTexture {
     for (let slot = 0; slot < MAX_FACES; slot++) {
       const face = slots[slot] ?? null;
       this.writeRow(slot, face);
-      if (face) active.push({ slot, held: face.held });
+      if (face)
+        active.push({ slot, held: face.held, blendshapes: face.blendshapes });
     }
     this.active = active;
 

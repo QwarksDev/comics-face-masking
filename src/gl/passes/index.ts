@@ -1,3 +1,5 @@
+export { cartoonEyesPass } from "./cartoonEyes/cartoonEyesPass";
+export type { CartoonEyesOptions, EyeArt } from "./cartoonEyes/cartoonEyesPass";
 export { faceBlurPass } from "./faceBlur/faceBlurPass";
 export type { FaceBlurOptions } from "./faceBlur/faceBlurPass";
 export { landmarkLinesPass } from "./landmarkLines/landmarkLinesPass";
