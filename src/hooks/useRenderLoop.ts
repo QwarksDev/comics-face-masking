@@ -1,8 +1,10 @@
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { type RefObject, useEffect } from "react";
 import type Webcam from "react-webcam";
+import { TRACKING } from "../config/tracking";
 import { Renderer } from "../gl/Renderer";
 import type { Pass } from "../gl/types";
+import { FaceTracker } from "../tracking/FaceTracker";
 
 export function useRenderLoop(
   canvasRef: RefObject<HTMLCanvasElement | null>,
@@ -15,6 +17,11 @@ export function useRenderLoop(
     if (!canvas || !landmarker) return;
 
     const renderer = new Renderer(canvas);
+    const tracker = new FaceTracker({
+      slots: TRACKING.maxFaces,
+      graceMs: TRACKING.graceMs,
+      maxMatchDistance: TRACKING.maxMatchDistance,
+    });
     let lastVideoTime = -1;
     let rafId = 0;
 
@@ -28,7 +35,7 @@ export function useRenderLoop(
         lastVideoTime = video.currentTime;
         const now = performance.now();
         const { faceLandmarks } = landmarker.detectForVideo(video, now);
-        renderer.setFaces(faceLandmarks);
+        renderer.setFaces(tracker.update(faceLandmarks, now));
         renderer.render(video, passes, now / 1000);
       }
       rafId = requestAnimationFrame(tick);

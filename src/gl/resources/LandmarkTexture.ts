@@ -1,12 +1,13 @@
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
+import { TRACKING } from "../../config/tracking";
 import { createTexture } from "../core/texture";
+import type { ActiveFace, SlotFace } from "../types";
 
 export const NUM_LANDMARKS = 478;
-export const MAX_FACES = 4;
+export const MAX_FACES = TRACKING.maxFaces;
 
 export class LandmarkTexture {
   readonly texture: WebGLTexture;
-  faceCount = 0;
+  active: readonly ActiveFace[] = [];
   private readonly data = new Float32Array(NUM_LANDMARKS * MAX_FACES * 4);
 
   constructor(private readonly gl: WebGL2RenderingContext) {
@@ -14,23 +15,14 @@ export class LandmarkTexture {
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA32F, NUM_LANDMARKS, MAX_FACES);
   }
 
-  update(faces: NormalizedLandmark[][]) {
-    const count = Math.min(faces.length, MAX_FACES);
-    this.faceCount = count;
-    if (count === 0) return;
-
-    const data = this.data;
-    for (let f = 0; f < count; f++) {
-      const face = faces[f];
-      let o = f * NUM_LANDMARKS * 4;
-      for (let i = 0; i < NUM_LANDMARKS; i++) {
-        const p = face[i];
-        data[o++] = p.x;
-        data[o++] = p.y;
-        data[o++] = p.z;
-        data[o++] = 1;
-      }
+  update(slots: readonly (SlotFace | null)[]) {
+    const active: ActiveFace[] = [];
+    for (let slot = 0; slot < MAX_FACES; slot++) {
+      const face = slots[slot] ?? null;
+      this.writeRow(slot, face);
+      if (face) active.push({ slot, held: face.held });
     }
+    this.active = active;
 
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
@@ -40,14 +32,30 @@ export class LandmarkTexture {
       0,
       0,
       NUM_LANDMARKS,
-      count,
+      MAX_FACES,
       gl.RGBA,
       gl.FLOAT,
-      data,
+      this.data,
     );
   }
 
   dispose() {
     this.gl.deleteTexture(this.texture);
+  }
+
+  private writeRow(slot: number, face: SlotFace | null) {
+    const data = this.data;
+    let o = slot * NUM_LANDMARKS * 4;
+    if (!face) {
+      data.fill(0, o, o + NUM_LANDMARKS * 4);
+      return;
+    }
+    for (let i = 0; i < NUM_LANDMARKS; i++) {
+      const p = face.landmarks[i];
+      data[o++] = p.x;
+      data[o++] = p.y;
+      data[o++] = p.z;
+      data[o++] = 1;
+    }
   }
 }

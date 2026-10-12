@@ -1,4 +1,3 @@
-import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { createProgram } from "./core/program";
 import type { RenderTarget } from "./core/target";
 import { UNIT } from "./core/units";
@@ -7,7 +6,7 @@ import { TargetPool } from "./resources/TargetPool";
 import { VideoTexture } from "./resources/VideoTexture";
 import { COPY_VIDEO_FS } from "./shaders/copyVideo.frag";
 import { FULLSCREEN_VS } from "./shaders/fullscreen.vert";
-import type { Draw, Frame, Pass } from "./types";
+import type { Draw, Frame, Pass, SlotFace } from "./types";
 
 function createContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {
   const gl = canvas.getContext("webgl2", {
@@ -44,8 +43,8 @@ export class Renderer {
     );
   }
 
-  setFaces(faces: NormalizedLandmark[][]) {
-    this.landmarks.update(faces);
+  setFaces(slots: readonly (SlotFace | null)[]) {
+    this.landmarks.update(slots);
   }
 
   render(source: HTMLVideoElement, passes: readonly Pass[], time: number) {
@@ -68,7 +67,7 @@ export class Renderer {
     const frame: Frame = {
       resolution: [width, height],
       time,
-      faceCount: this.landmarks.faceCount,
+      faces: this.landmarks.active,
       input: null,
       output: src.framebuffer,
     };

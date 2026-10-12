@@ -17,7 +17,7 @@ src/
   App.tsx                  page layout
   effects/stack.ts         the effect stack: add, remove, reorder passes here
   config/                  camera constraints, MediaPipe model/runtime URLs
-  tracking/                face landmarker setup, connection sets
+  tracking/                face landmarker setup, stable face slots (FaceTracker), connection sets
   hooks/                   useFaceLandmarker, useRenderLoop
   components/EffectsView/  hidden webcam + output canvas
   gl/

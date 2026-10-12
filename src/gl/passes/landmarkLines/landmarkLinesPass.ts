@@ -51,9 +51,10 @@ export function landmarkLinesPass(
         gl.useProgram(program);
         gl.bindVertexArray(vao);
         gl.uniform2fv(loc("u_resolution"), frame.resolution);
-        for (let face = 0; face < frame.faceCount; face++) {
-          gl.uniform1i(loc("u_face"), face);
-          gl.uniform4fv(loc("u_color"), colors[face % colors.length]);
+        for (const { slot, held } of frame.faces) {
+          if (held) continue;
+          gl.uniform1i(loc("u_face"), slot);
+          gl.uniform4fv(loc("u_color"), colors[slot % colors.length]);
           gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, connections.length);
         }
       };
