@@ -13,6 +13,7 @@ export interface SlotFace {
 export interface ActiveFace {
   slot: number;
   held: boolean;
+  landmarks: readonly NormalizedLandmark[];
   blendshapes: Float32Array;
 }
 

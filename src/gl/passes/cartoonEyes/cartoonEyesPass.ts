@@ -1,11 +1,11 @@
 import { BLENDSHAPE } from "../../../tracking/detection";
 import { createProgram, uniformLocator } from "../../core/program";
 import { UNIT } from "../../core/units";
-import { MAX_FACES } from "../../resources/LandmarkTexture";
 import type { ActiveFace, Pass, Vec2, Vec4 } from "../../types";
 import { EYES_FS } from "./eyes.frag";
 import { EYES_VS } from "./eyes.vert";
-import { createSpriteTexture, type Sprite } from "./spriteTexture";
+import { slotSmoother, smoothstep } from "../shared/expression";
+import { createSpriteTexture, type Sprite } from "../shared/spriteTexture";
 
 export interface EyeArt {
   sclera: Sprite;
@@ -74,11 +74,6 @@ const WIDE_L = 5;
 const SQUINT_R = 6;
 const SQUINT_L = 7;
 
-function smoothstep(edge0: number, edge1: number, x: number): number {
-  const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
-  return t * t * (3 - 2 * t);
-}
-
 export function cartoonEyesPass({
   art = {},
   size = 0.5,
@@ -103,7 +98,7 @@ export function cartoonEyesPass({
 }: CartoonEyesOptions = {}): Pass {
   const sprites: EyeArt = { ...DEFAULT_ART, ...art };
   const [right, left] = swapSides ? [LEFT, RIGHT] : [RIGHT, LEFT];
-  const states: (Float32Array | null)[] = new Array(MAX_FACES).fill(null);
+  const smooth = slotSmoother(smoothing);
 
   const target = (b: Float32Array, out: Float32Array) => {
     let gx = (b[right.in] - b[right.out] + b[left.out] - b[left.in]) / 2;
@@ -127,14 +122,8 @@ export function cartoonEyesPass({
   };
 
   const scratch = new Float32Array(8);
-  const expression = ({ slot, blendshapes }: ActiveFace): Float32Array => {
-    const next = target(blendshapes, scratch);
-    const state = states[slot];
-    if (!state) return (states[slot] = next.slice());
-    for (let i = 0; i < state.length; i++)
-      state[i] += (next[i] - state[i]) * (1 - smoothing);
-    return state;
-  };
+  const expression = ({ slot, blendshapes }: ActiveFace): Float32Array =>
+    smooth(slot, target(blendshapes, scratch));
 
   return {
     overlay: true,

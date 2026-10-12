@@ -30,6 +30,18 @@ export function createSpriteTexture(
     return texture;
   }
   if (placeholder) upload(gl, texture, placeholder());
+  else
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      1,
+      1,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      new Uint8Array(4),
+    );
   const image = new Image();
   image.onload = () => upload(gl, texture, image);
   image.src = source;

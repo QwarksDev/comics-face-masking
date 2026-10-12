@@ -21,7 +21,12 @@ export class LandmarkTexture {
       const face = slots[slot] ?? null;
       this.writeRow(slot, face);
       if (face)
-        active.push({ slot, held: face.held, blendshapes: face.blendshapes });
+        active.push({
+          slot,
+          held: face.held,
+          landmarks: face.landmarks,
+          blendshapes: face.blendshapes,
+        });
     }
     this.active = active;
 
