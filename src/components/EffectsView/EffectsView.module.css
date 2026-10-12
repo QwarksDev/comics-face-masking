@@ -1,0 +1,5 @@
+.video {
+  width: 1200px;
+  max-width: 100%;
+  transform: scaleX(-1);
+}
