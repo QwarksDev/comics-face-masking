@@ -1,26 +1,31 @@
 import { useRef } from "react";
 import Webcam from "react-webcam";
 import { VIDEO_CONSTRAINTS } from "../../config/camera";
+import type { Pass } from "../../gl/types";
 import { useFaceLandmarker } from "../../hooks/useFaceLandmarker";
 import { useRenderLoop } from "../../hooks/useRenderLoop";
 import styles from "./EffectsView.module.css";
 
-export function EffectsView() {
+interface EffectsViewProps {
+  passes: readonly Pass[];
+}
+
+export function EffectsView({ passes }: Readonly<EffectsViewProps>) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const landmarker = useFaceLandmarker();
 
-  useRenderLoop(canvasRef, webcamRef, landmarker);
+  useRenderLoop(canvasRef, webcamRef, landmarker, passes);
 
   return (
-    <div className={styles.stage}>
+    <>
       <Webcam
         ref={webcamRef}
         audio={false}
         videoConstraints={VIDEO_CONSTRAINTS}
-        className={styles.video}
+        className={styles.hiddenVideo}
       />
-      <canvas ref={canvasRef} className={styles.overlay} />
-    </div>
+      <canvas ref={canvasRef} className={styles.canvas} />
+    </>
   );
 }
