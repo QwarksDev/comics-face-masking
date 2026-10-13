@@ -1,0 +1,78 @@
+{
+  "faceBlur": {
+    "enabled": true,
+    "sigma": 65,
+    "padding": -0.08,
+    "feather": 0.8,
+    "downsample": 0.45
+  },
+  "posterize": {
+    "enabled": false,
+    "levels": 6
+  },
+  "contourLines": {
+    "enabled": false,
+    "colors": [
+      [0, 1, 0.53, 1],
+      [0.2, 0.6, 1, 1],
+      [1, 0.8, 0.1, 1],
+      [0.8, 0.3, 1, 1]
+    ],
+    "width": 2
+  },
+  "irisLines": {
+    "enabled": false,
+    "colors": [
+      [1, 0.2, 0.4, 1],
+      [1, 0.5, 0.1, 1]
+    ],
+    "width": 2
+  },
+  "cartoonEyes": {
+    "enabled": true,
+    "size": 0.69,
+    "aspect": 1,
+    "offset": [0, 0],
+    "pupilSize": [0.8, 0.8],
+    "gazeRange": [0.45, 0.4],
+    "gazeGain": [1.8, 1.8],
+    "blinkRange": [0.3, 0.5],
+    "squintRange": [0.4, 0.5],
+    "wideGain": 0.2,
+    "closedLid": -0.2,
+    "lidCurve": 0.4,
+    "squintLid": -0.2,
+    "lowerLidCurve": 0.15,
+    "lidWidth": 0.05,
+    "lidColor": [0, 0, 0, 1],
+    "shutBlend": 0.1,
+    "smoothing": 0.4,
+    "mirror": false,
+    "swapSides": false
+  },
+  "cartoonMouth": {
+    "enabled": true,
+    "size": 1,
+    "offset": [0, -0.28],
+    "openRange": [0.02, 0.25],
+    "openSquash": [0.45, 1.2],
+    "stretchGain": 0.25,
+    "tiltGain": 0.35,
+    "shiftGain": 0.3,
+    "holdTime": 0.04,
+    "fadeTime": 0.08,
+    "smoothing": 0.35,
+    "swapSides": false,
+    "debug": false,
+    "thresholds": {
+      "round": 0.4,
+      "roundMaxSmile": 0.3,
+      "open": 0.12,
+      "grinSmile": 0.35,
+      "smirk": 0.15,
+      "smirkSmileRatio": 0.6,
+      "smile": 0.3,
+      "frown": 0.12
+    }
+  }
+}

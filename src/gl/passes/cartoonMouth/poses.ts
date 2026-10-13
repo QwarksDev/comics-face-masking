@@ -18,11 +18,34 @@ export interface MouthSignals {
   round: number;
 }
 
-export function choosePose(s: MouthSignals): MouthPose {
-  if (s.round > 0.4 && s.smile < 0.3) return "o";
-  if (s.open > 0.12) return s.smile > 0.35 ? "grin" : "open";
-  if (Math.abs(s.smirk) > Math.max(0.15, s.smile * 0.6)) return "smirk";
-  if (s.smile > 0.3) return "smile";
-  if (s.frown > 0.12) return "frown";
+export interface PoseThresholds {
+  round: number;
+  roundMaxSmile: number;
+  open: number;
+  grinSmile: number;
+  smirk: number;
+  smirkSmileRatio: number;
+  smile: number;
+  frown: number;
+}
+
+export const POSE_THRESHOLD_DEFAULTS: PoseThresholds = {
+  round: 0.4,
+  roundMaxSmile: 0.3,
+  open: 0.12,
+  grinSmile: 0.35,
+  smirk: 0.15,
+  smirkSmileRatio: 0.6,
+  smile: 0.3,
+  frown: 0.12,
+};
+
+export function choosePose(s: MouthSignals, t: PoseThresholds): MouthPose {
+  if (s.round > t.round && s.smile < t.roundMaxSmile) return "o";
+  if (s.open > t.open) return s.smile > t.grinSmile ? "grin" : "open";
+  if (Math.abs(s.smirk) > Math.max(t.smirk, s.smile * t.smirkSmileRatio))
+    return "smirk";
+  if (s.smile > t.smile) return "smile";
+  if (s.frown > t.frown) return "frown";
   return "neutral";
 }

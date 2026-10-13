@@ -14,28 +14,49 @@ export interface EyeArt {
   closed: Sprite;
 }
 
-export interface CartoonEyesOptions {
-  art?: Partial<EyeArt>;
-  size?: number;
-  aspect?: number;
-  offset?: Vec2;
-  pupilSize?: Vec2;
-  gazeRange?: Vec2;
-  gazeGain?: Vec2;
-  blinkRange?: Vec2;
-  squintRange?: Vec2;
-  wideGain?: number;
-  closedLid?: number;
-  lidCurve?: number;
-  squintLid?: number;
-  lowerLidCurve?: number;
-  lidWidth?: number;
-  lidColor?: Vec4;
-  shutBlend?: number;
-  smoothing?: number;
-  mirror?: boolean;
-  swapSides?: boolean;
+export interface CartoonEyesParams {
+  size: number;
+  aspect: number;
+  offset: Vec2;
+  pupilSize: Vec2;
+  gazeRange: Vec2;
+  gazeGain: Vec2;
+  blinkRange: Vec2;
+  squintRange: Vec2;
+  wideGain: number;
+  closedLid: number;
+  lidCurve: number;
+  squintLid: number;
+  lowerLidCurve: number;
+  lidWidth: number;
+  lidColor: Vec4;
+  shutBlend: number;
+  smoothing: number;
+  mirror: boolean;
+  swapSides: boolean;
 }
+
+export const CARTOON_EYES_DEFAULTS: CartoonEyesParams = {
+  size: 0.5,
+  aspect: 1.35,
+  offset: [0, 0],
+  pupilSize: [0.42, 0.5],
+  gazeRange: [0.45, 0.4],
+  gazeGain: [1.8, 1.8],
+  blinkRange: [0.25, 0.6],
+  squintRange: [0.2, 0.7],
+  wideGain: 0.25,
+  closedLid: -0.1,
+  lidCurve: 0.3,
+  squintLid: -0.35,
+  lowerLidCurve: 0.15,
+  lidWidth: 0.07,
+  lidColor: [0, 0, 0, 1],
+  shutBlend: 0.1,
+  smoothing: 0.4,
+  mirror: true,
+  swapSides: false,
+};
 
 const ART_DIR = `${import.meta.env.BASE_URL}eyes/`;
 
@@ -74,33 +95,16 @@ const WIDE_L = 5;
 const SQUINT_R = 6;
 const SQUINT_L = 7;
 
-export function cartoonEyesPass({
-  art = {},
-  size = 0.5,
-  aspect = 1.35,
-  offset = [0, 0],
-  pupilSize = [0.42, 0.5],
-  gazeRange = [0.45, 0.4],
-  gazeGain = [1.8, 1.8],
-  blinkRange = [0.25, 0.6],
-  squintRange = [0.2, 0.7],
-  wideGain = 0.25,
-  closedLid = -0.1,
-  lidCurve = 0.3,
-  squintLid = -0.35,
-  lowerLidCurve = 0.15,
-  lidWidth = 0.07,
-  lidColor = [0, 0, 0, 1],
-  shutBlend = 0.1,
-  smoothing = 0.4,
-  mirror = true,
-  swapSides = false,
-}: CartoonEyesOptions = {}): Pass {
+export function cartoonEyesPass(
+  params: CartoonEyesParams = { ...CARTOON_EYES_DEFAULTS },
+  art: Partial<EyeArt> = {},
+): Pass {
   const sprites: EyeArt = { ...DEFAULT_ART, ...art };
-  const [right, left] = swapSides ? [LEFT, RIGHT] : [RIGHT, LEFT];
-  const smooth = slotSmoother(smoothing);
+  const smooth = slotSmoother();
 
   const target = (b: Float32Array, out: Float32Array) => {
+    const { gazeGain, blinkRange, squintRange, wideGain, swapSides } = params;
+    const [right, left] = swapSides ? [LEFT, RIGHT] : [RIGHT, LEFT];
     let gx = (b[right.in] - b[right.out] + b[left.out] - b[left.in]) / 2;
     let gy = (b[right.up] - b[right.down] + b[left.up] - b[left.down]) / 2;
     gx *= gazeGain[0];
@@ -123,7 +127,7 @@ export function cartoonEyesPass({
 
   const scratch = new Float32Array(8);
   const expression = ({ slot, blendshapes }: ActiveFace): Float32Array =>
-    smooth(slot, target(blendshapes, scratch));
+    smooth(slot, target(blendshapes, scratch), params.smoothing);
 
   return {
     overlay: true,
@@ -145,22 +149,26 @@ export function cartoonEyesPass({
       gl.useProgram(program);
       gl.uniform1i(loc("u_landmarks"), UNIT.landmarks);
       for (const { unit, uniform } of bound) gl.uniform1i(loc(uniform), unit);
-      gl.uniform1f(loc("u_size"), size);
-      gl.uniform1f(loc("u_aspect"), aspect);
-      gl.uniform2fv(loc("u_offset"), offset);
-      gl.uniform2fv(loc("u_pupilSize"), pupilSize);
-      gl.uniform2fv(loc("u_gazeRange"), gazeRange);
-      gl.uniform1f(loc("u_closedLid"), closedLid);
-      gl.uniform1f(loc("u_lidCurve"), lidCurve);
-      gl.uniform1f(loc("u_squintLid"), squintLid);
-      gl.uniform1f(loc("u_lowerLidCurve"), lowerLidCurve);
-      gl.uniform1f(loc("u_lidWidth"), lidWidth);
-      gl.uniform4fv(loc("u_lidColor"), lidColor);
-      gl.uniform1f(loc("u_shutBlend"), shutBlend);
-      gl.uniform1i(loc("u_mirror"), mirror ? 1 : 0);
+
+      const applyParams = () => {
+        gl.uniform1f(loc("u_size"), params.size);
+        gl.uniform1f(loc("u_aspect"), params.aspect);
+        gl.uniform2fv(loc("u_offset"), params.offset);
+        gl.uniform2fv(loc("u_pupilSize"), params.pupilSize);
+        gl.uniform2fv(loc("u_gazeRange"), params.gazeRange);
+        gl.uniform1f(loc("u_closedLid"), params.closedLid);
+        gl.uniform1f(loc("u_lidCurve"), params.lidCurve);
+        gl.uniform1f(loc("u_squintLid"), params.squintLid);
+        gl.uniform1f(loc("u_lowerLidCurve"), params.lowerLidCurve);
+        gl.uniform1f(loc("u_lidWidth"), params.lidWidth);
+        gl.uniform4fv(loc("u_lidColor"), params.lidColor);
+        gl.uniform1f(loc("u_shutBlend"), params.shutBlend);
+        gl.uniform1i(loc("u_mirror"), params.mirror ? 1 : 0);
+      };
 
       return (frame) => {
         gl.useProgram(program);
+        applyParams();
         for (const { unit, texture } of bound) {
           gl.activeTexture(gl.TEXTURE0 + unit);
           gl.bindTexture(gl.TEXTURE_2D, texture);

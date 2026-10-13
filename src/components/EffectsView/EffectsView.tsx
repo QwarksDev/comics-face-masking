@@ -8,9 +8,13 @@ import styles from "./EffectsView.module.css";
 
 interface EffectsViewProps {
   passes: readonly Pass[];
+  showOriginal?: boolean;
 }
 
-export function EffectsView({ passes }: Readonly<EffectsViewProps>) {
+export function EffectsView({
+  passes,
+  showOriginal = false,
+}: Readonly<EffectsViewProps>) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const landmarker = useFaceLandmarker();
@@ -23,7 +27,7 @@ export function EffectsView({ passes }: Readonly<EffectsViewProps>) {
         ref={webcamRef}
         audio={false}
         videoConstraints={VIDEO_CONSTRAINTS}
-        className={styles.hiddenVideo}
+        className={showOriginal ? styles.originalVideo : styles.hiddenVideo}
       />
       <canvas ref={canvasRef} className={styles.canvas} />
     </>

@@ -9,21 +9,23 @@ import {
 import { FACE_MASK_FS, MAX_POLY } from "./faceMask.frag";
 import { GAUSSIAN_BLUR_FS } from "./gaussianBlur.frag";
 
-export interface FaceBlurOptions {
-  sigma?: number;
-  padding?: number;
-  feather?: number;
-  downsample?: number;
+export interface FaceBlurParams {
+  sigma: number;
+  padding: number;
+  feather: number;
+  downsample: number;
 }
+
+export const FACE_BLUR_DEFAULTS: FaceBlurParams = {
+  sigma: 24,
+  padding: 0.1,
+  feather: 0.25,
+  downsample: 0.5,
+};
 
 export function faceBlurPass(
   polygon: readonly Connection[],
-  {
-    sigma = 24,
-    padding = 0.1,
-    feather = 0.25,
-    downsample = 0.5,
-  }: FaceBlurOptions = {},
+  params: FaceBlurParams = { ...FACE_BLUR_DEFAULTS },
 ): Pass {
   const indices = polygon.map((c) => c.start);
   if (indices.length > MAX_POLY)
@@ -37,10 +39,8 @@ export function faceBlurPass(
       gl.uniform1i(mask.loc("u_blurred"), UNIT.aux);
       gl.uniform1iv(mask.loc("u_poly"), new Int32Array(indices));
       gl.uniform1i(mask.loc("u_polyCount"), indices.length);
-      gl.uniform1f(mask.loc("u_padding"), padding);
-      gl.uniform1f(mask.loc("u_feather"), feather);
 
-      const blurred = gaussianBlur(gl, blur, sigma, downsample);
+      const blurred = gaussianBlur(gl, blur, params);
 
       return (frame) => {
         const texture = blurred(frame);
@@ -52,6 +52,8 @@ export function faceBlurPass(
         gl.viewport(0, 0, frame.resolution[0], frame.resolution[1]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, frame.output);
         mask.use(frame);
+        gl.uniform1f(mask.loc("u_padding"), params.padding);
+        gl.uniform1f(mask.loc("u_feather"), params.feather);
         drawFullscreen(gl);
       };
     },
@@ -61,13 +63,13 @@ export function faceBlurPass(
 function gaussianBlur(
   gl: WebGL2RenderingContext,
   blur: FullscreenProgram,
-  sigma: number,
-  downsample: number,
+  params: FaceBlurParams,
 ) {
   const keyH = Symbol("blurH");
   const keyV = Symbol("blurV");
 
   return (frame: Frame): WebGLTexture => {
+    const { sigma, downsample } = params;
     const h = frame.scratch(keyH, downsample);
     const v = frame.scratch(keyV, downsample);
     gl.viewport(0, 0, h.width, h.height);

@@ -5,14 +5,15 @@ import type { Pass, Vec4 } from "../../types";
 import { LINES_FS } from "./lines.frag";
 import { LINES_VS } from "./lines.vert";
 
-export interface LandmarkLinesOptions {
-  color?: Vec4 | readonly Vec4[];
-  width?: number;
+export interface LandmarkLinesParams {
+  colors: readonly Vec4[];
+  width: number;
 }
 
-function isPalette(color: Vec4 | readonly Vec4[]): color is readonly Vec4[] {
-  return Array.isArray(color[0]);
-}
+export const LANDMARK_LINES_DEFAULTS: LandmarkLinesParams = {
+  colors: [[0, 1, 0.5, 1]],
+  width: 2,
+};
 
 function createEdgeVao(
   gl: WebGL2RenderingContext,
@@ -34,9 +35,8 @@ function createEdgeVao(
 
 export function landmarkLinesPass(
   connections: readonly Connection[],
-  { color = [0, 1, 0.5, 1], width = 2 }: LandmarkLinesOptions = {},
+  params: LandmarkLinesParams = { ...LANDMARK_LINES_DEFAULTS },
 ): Pass {
-  const colors = isPalette(color) ? color : [color];
   return {
     overlay: true,
     create(gl) {
@@ -44,13 +44,15 @@ export function landmarkLinesPass(
       const loc = uniformLocator(gl, program);
       gl.useProgram(program);
       gl.uniform1i(loc("u_landmarks"), UNIT.landmarks);
-      gl.uniform1f(loc("u_width"), width);
       const vao = createEdgeVao(gl, program, connections);
 
       return (frame) => {
+        const { colors, width } = params;
+        if (colors.length === 0) return;
         gl.useProgram(program);
         gl.bindVertexArray(vao);
         gl.uniform2fv(loc("u_resolution"), frame.resolution);
+        gl.uniform1f(loc("u_width"), width);
         for (const { slot, held } of frame.faces) {
           if (held) continue;
           gl.uniform1i(loc("u_face"), slot);

@@ -8,25 +8,47 @@ import { slotSmoother, smoothstep } from "../shared/expression";
 import { createSpriteTexture, type Sprite } from "../shared/spriteTexture";
 import { MOUTH_FS } from "./mouth.frag";
 import { MOUTH_VS } from "./mouth.vert";
-import { choosePose, MOUTH_POSES, type MouthPose } from "./poses";
+import {
+  choosePose,
+  MOUTH_POSES,
+  POSE_THRESHOLD_DEFAULTS,
+  type MouthPose,
+  type PoseThresholds,
+} from "./poses";
 
 export type MouthArt = Record<MouthPose, Sprite>;
 
-export interface CartoonMouthOptions {
-  art?: Partial<MouthArt>;
-  size?: number;
-  offset?: Vec2;
-  openRange?: Vec2;
-  openSquash?: Vec2;
-  stretchGain?: number;
-  tiltGain?: number;
-  shiftGain?: number;
-  holdTime?: number;
-  fadeTime?: number;
-  smoothing?: number;
-  swapSides?: boolean;
-  debug?: boolean;
+export interface CartoonMouthParams {
+  size: number;
+  offset: Vec2;
+  openRange: Vec2;
+  openSquash: Vec2;
+  stretchGain: number;
+  tiltGain: number;
+  shiftGain: number;
+  holdTime: number;
+  fadeTime: number;
+  smoothing: number;
+  swapSides: boolean;
+  debug: boolean;
+  thresholds: PoseThresholds;
 }
+
+export const CARTOON_MOUTH_DEFAULTS: CartoonMouthParams = {
+  size: 1,
+  offset: [0, -0.28],
+  openRange: [0.02, 0.25],
+  openSquash: [0.45, 1.2],
+  stretchGain: 0.25,
+  tiltGain: 0.35,
+  shiftGain: 0.3,
+  holdTime: 0.04,
+  fadeTime: 0.08,
+  smoothing: 0.35,
+  swapSides: false,
+  debug: false,
+  thresholds: POSE_THRESHOLD_DEFAULTS,
+};
 
 const ART_DIR = `${import.meta.env.BASE_URL}mouth/`;
 
@@ -69,25 +91,14 @@ interface PoseState {
   candidateSince: number;
 }
 
-export function cartoonMouthPass({
-  art = {},
-  size = 1,
-  offset = [0, -0.28],
-  openRange = [0.02, 0.25],
-  openSquash = [0.45, 1.2],
-  stretchGain = 0.25,
-  tiltGain = 0.35,
-  shiftGain = 0.3,
-  holdTime = 0.04,
-  fadeTime = 0.08,
-  smoothing = 0.35,
-  swapSides = false,
-  debug = false,
-}: CartoonMouthOptions = {}): Pass {
+export function cartoonMouthPass(
+  params: CartoonMouthParams = { ...CARTOON_MOUTH_DEFAULTS },
+  art: Partial<MouthArt> = {},
+): Pass {
   const sprites = Object.fromEntries(
     MOUTH_POSES.map((pose) => [pose, art[pose] ?? `${ART_DIR}${pose}.png`]),
   ) as MouthArt;
-  const smooth = slotSmoother(smoothing);
+  const smooth = slotSmoother();
   const scratch = new Float32Array(9);
   const poses: (PoseState | null)[] = new Array(MAX_FACES).fill(null);
   let lastLog = -Infinity;
@@ -100,7 +111,7 @@ export function cartoonMouthPass({
     const sides = (base: SidedName<BlendshapeName>): Vec2 => {
       const right = b[BLENDSHAPE[`${base}Right`]];
       const left = b[BLENDSHAPE[`${base}Left`]];
-      return swapSides ? [left, right] : [right, left];
+      return params.swapSides ? [left, right] : [right, left];
     };
     const [smileR, smileL] = sides("mouthSmile");
     const [frownR, frownL] = sides("mouthFrown");
@@ -110,8 +121,8 @@ export function cartoonMouthPass({
     const pucker = b[BLENDSHAPE.mouthPucker];
     const funnel = b[BLENDSHAPE.mouthFunnel];
     out[OPEN] = smoothstep(
-      openRange[0],
-      openRange[1],
+      params.openRange[0],
+      params.openRange[1],
       lipGap(landmarks, resolution),
     );
     out[SMILE] = (smileR + smileL) / 2;
@@ -153,7 +164,7 @@ export function cartoonMouthPass({
       state.candidate = pose;
       state.candidateFlip = flip;
       state.candidateSince = time;
-    } else if (time - state.candidateSince >= holdTime) {
+    } else if (time - state.candidateSince >= params.holdTime) {
       state.previous = state.pose;
       state.previousFlip = state.flip;
       state.pose = pose;
@@ -164,6 +175,7 @@ export function cartoonMouthPass({
   };
 
   const transform = (s: Float32Array, pose: MouthPose): number[] => {
+    const { stretchGain, openSquash, tiltGain, shiftGain } = params;
     const scaleX = Math.min(
       Math.max(1 + s[STRETCH] * stretchGain - s[PUCKER] * 0.25, 0.6),
       1.4,
@@ -192,15 +204,20 @@ export function cartoonMouthPass({
       gl.uniform1i(loc("u_landmarks"), UNIT.landmarks);
       gl.uniform1i(loc("u_current"), UNIT.aux);
       gl.uniform1i(loc("u_previous"), UNIT.aux2);
-      gl.uniform1f(loc("u_size"), size);
-      gl.uniform2fv(loc("u_offset"), offset);
 
       return (frame) => {
+        const { fadeTime } = params;
         gl.useProgram(program);
+        gl.uniform1f(loc("u_size"), params.size);
+        gl.uniform2fv(loc("u_offset"), params.offset);
         gl.uniform2fv(loc("u_resolution"), frame.resolution);
         for (const face of frame.faces) {
           const { slot } = face;
-          const s = smooth(slot, signals(face, frame.resolution, scratch));
+          const s = smooth(
+            slot,
+            signals(face, frame.resolution, scratch),
+            params.smoothing,
+          );
           const mouth = {
             open: s[OPEN],
             smile: s[SMILE],
@@ -208,14 +225,14 @@ export function cartoonMouthPass({
             frown: s[FROWN],
             round: s[ROUND],
           };
-          const wanted = choosePose(mouth);
+          const wanted = choosePose(mouth, params.thresholds);
           const state = updatePose(
             slot,
             wanted,
             wanted === "smirk" && s[SMIRK] > 0,
             frame.time,
           );
-          if (debug && frame.time - lastLog > 0.25) {
+          if (params.debug && frame.time - lastLog > 0.25) {
             lastLog = frame.time;
             console.debug(
               `mouth[${slot}] ${state.pose}`,

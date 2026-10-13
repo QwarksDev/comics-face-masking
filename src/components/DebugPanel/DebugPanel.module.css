@@ -1,0 +1,165 @@
+.panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 12px;
+  background: rgba(20, 22, 28, 0.92);
+  color: #e6e6e6;
+  font-size: 12px;
+  z-index: 10;
+}
+
+.panel button,
+.import {
+  padding: 3px 8px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #2c303a;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.panel button:hover,
+.import:hover {
+  background: #3a3f4b;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.preset {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.preset select {
+  background: #1b1d23;
+  color: inherit;
+  border: 1px solid #444;
+  border-radius: 3px;
+  font: inherit;
+  padding: 3px;
+}
+
+.panel .reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+.panel .reset:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.import input {
+  display: none;
+}
+
+.status {
+  margin: 6px 0 0;
+  color: #9fd3a8;
+}
+
+.section {
+  margin-top: 10px;
+  border-top: 1px solid #3a3f4b;
+  padding-top: 8px;
+}
+
+.section summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 110px 1fr 22px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.number {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  align-items: center;
+  gap: 6px;
+}
+
+.number input[type="range"] {
+  width: 100%;
+  min-width: 0;
+}
+
+.number input[type="number"] {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1b1d23;
+  color: inherit;
+  border: 1px solid #444;
+  border-radius: 3px;
+  font: inherit;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.color {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  align-items: center;
+  gap: 6px;
+}
+
+.color input[type="color"] {
+  width: 32px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.listItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px;
+}
+
+.group {
+  margin: 8px 0 0;
+  padding: 4px 8px 8px;
+  border: 1px solid #3a3f4b;
+  border-radius: 4px;
+}
