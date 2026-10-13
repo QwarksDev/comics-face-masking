@@ -67,6 +67,7 @@ export const DEBUG_SCHEMA: { [S in SectionName]: SectionSchema<S> } = {
     fields: {
       size: num(0.1, 2, 0.01),
       aspect: num(0.5, 3, 0.01),
+      foreshortening: num(0, 1, 0.01),
       offset: vec2(-1, 1, 0.01),
       pupilSize: vec2(0, 1, 0.01),
       gazeRange: vec2(0, 1, 0.01),

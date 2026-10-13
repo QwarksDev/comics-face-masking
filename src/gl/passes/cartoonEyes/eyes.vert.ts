@@ -9,6 +9,8 @@ uniform float u_size;
 uniform float u_aspect;
 uniform vec2 u_offset;
 uniform vec2 u_wide;
+uniform float u_foreshortening;
+uniform int u_front;
 
 out vec2 v_local;
 flat out int v_eye;
@@ -20,28 +22,36 @@ const vec2 CORNERS[6] = vec2[6](
   vec2(-1.0,  1.0), vec2(1.0, -1.0), vec2(1.0,  1.0)
 );
 
-vec2 point(int i) {
+vec3 point(int i) {
   vec4 l = texelFetch(u_landmarks, ivec2(i, u_face), 0);
-  return vec2(l.x, 1.0 - l.y) * u_resolution;
+  return vec3(l.x, 1.0 - l.y, l.z) * u_resolution.xyx;
+}
+
+vec3 safeNormalize(vec3 v, vec3 fallback) {
+  float len = length(v);
+  return len > 1e-4 ? v / len : fallback;
 }
 
 void main() {
-  int eye = gl_InstanceID;
-  vec2 a = point(EYE_CORNERS[eye].x);
-  vec2 b = point(EYE_CORNERS[eye].y);
+  int eye = gl_InstanceID == 0 ? 1 - u_front : u_front;
+  vec3 across = point(263) - point(33);
+  float span = mix(length(across), length(across.xy), u_foreshortening);
+  float width = span * u_size;
 
-  vec2 d = b - a;
-  vec2 xAxis = length(d) > 1e-4 ? normalize(d) : vec2(1.0, 0.0);
-  vec2 yAxis = vec2(-xAxis.y, xAxis.x);
-  if (dot(yAxis, point(10) - point(152)) < 0.0) yAxis = -yAxis;
-
-  float width = distance(point(33), point(263)) * u_size;
-  vec2 extent = vec2(width, width * u_aspect * (1.0 + u_wide[eye])) * 0.5;
+  vec3 xAxis3 = safeNormalize(across, vec3(1.0, 0.0, 0.0));
+  vec3 up = point(10) - point(152);
+  vec3 yAxis3 = safeNormalize(up - xAxis3 * dot(up, xAxis3), vec3(0.0, 1.0, 0.0));
   float outward = eye == 0 ? -1.0 : 1.0;
-  vec2 center = (a + b) * 0.5 + (xAxis * u_offset.x * outward + yAxis * u_offset.y) * width;
+  vec3 center = (point(EYE_CORNERS[eye].x) + point(EYE_CORNERS[eye].y)) * 0.5
+    + (xAxis3 * u_offset.x * outward + yAxis3 * u_offset.y) * width;
 
+  vec2 xAxis = length(across.xy) > 1e-4 ? normalize(across.xy) : vec2(1.0, 0.0);
+  vec2 yAxis = vec2(-xAxis.y, xAxis.x);
+  if (dot(yAxis, up.xy) < 0.0) yAxis = -yAxis;
+
+  vec2 extent = vec2(width, width * u_aspect * (1.0 + u_wide[eye])) * 0.5;
   vec2 c = CORNERS[gl_VertexID];
-  vec2 p = center + xAxis * c.x * extent.x + yAxis * c.y * extent.y;
+  vec2 p = center.xy + xAxis * c.x * extent.x + yAxis * c.y * extent.y;
 
   v_local = c;
   v_eye = eye;

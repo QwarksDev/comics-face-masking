@@ -1,6 +1,7 @@
 import { BLENDSHAPE } from "../../../tracking/detection";
 import { createProgram, uniformLocator } from "../../core/program";
 import { UNIT } from "../../core/units";
+import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import type { ActiveFace, Pass, Vec2, Vec4 } from "../../types";
 import { EYES_FS } from "./eyes.frag";
 import { EYES_VS } from "./eyes.vert";
@@ -17,6 +18,7 @@ export interface EyeArt {
 export interface CartoonEyesParams {
   size: number;
   aspect: number;
+  foreshortening: number;
   offset: Vec2;
   pupilSize: Vec2;
   gazeRange: Vec2;
@@ -39,6 +41,7 @@ export interface CartoonEyesParams {
 export const CARTOON_EYES_DEFAULTS: CartoonEyesParams = {
   size: 0.5,
   aspect: 1.35,
+  foreshortening: 0,
   offset: [0, 0],
   pupilSize: [0.42, 0.5],
   gazeRange: [0.45, 0.4],
@@ -85,6 +88,16 @@ const LEFT = {
   up: BLENDSHAPE.eyeLookUpLeft,
   down: BLENDSHAPE.eyeLookDownLeft,
 };
+
+const EYE_LANDMARKS = [
+  [33, 133],
+  [362, 263],
+] as const;
+
+function eyeDepth(landmarks: readonly NormalizedLandmark[], eye: 0 | 1) {
+  const [a, b] = EYE_LANDMARKS[eye];
+  return landmarks[a].z + landmarks[b].z;
+}
 
 const OPEN_R = 0;
 const OPEN_L = 1;
@@ -153,6 +166,7 @@ export function cartoonEyesPass(
       const applyParams = () => {
         gl.uniform1f(loc("u_size"), params.size);
         gl.uniform1f(loc("u_aspect"), params.aspect);
+        gl.uniform1f(loc("u_foreshortening"), params.foreshortening);
         gl.uniform2fv(loc("u_offset"), params.offset);
         gl.uniform2fv(loc("u_pupilSize"), params.pupilSize);
         gl.uniform2fv(loc("u_gazeRange"), params.gazeRange);
@@ -177,6 +191,10 @@ export function cartoonEyesPass(
         for (const face of frame.faces) {
           const e = expression(face);
           gl.uniform1i(loc("u_face"), face.slot);
+          gl.uniform1i(
+            loc("u_front"),
+            eyeDepth(face.landmarks, 0) < eyeDepth(face.landmarks, 1) ? 0 : 1,
+          );
           gl.uniform2f(loc("u_open"), e[OPEN_R], e[OPEN_L]);
           gl.uniform2f(loc("u_gaze"), e[GAZE_X], e[GAZE_Y]);
           gl.uniform2f(loc("u_wide"), e[WIDE_R], e[WIDE_L]);
