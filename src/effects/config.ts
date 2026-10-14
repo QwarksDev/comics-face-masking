@@ -10,6 +10,7 @@ import {
   POSTERIZE_DEFAULTS,
   type PosterizeParams,
 } from "../gl/passes";
+import { merge } from "../utils/object";
 
 interface Toggle {
   enabled: boolean;
@@ -34,19 +35,6 @@ const DEFAULTS: EffectsConfig = {
   cartoonEyes: { enabled: true, ...CARTOON_EYES_DEFAULTS },
   cartoonMouth: { enabled: true, ...CARTOON_MOUTH_DEFAULTS },
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function merge<T>(base: T, override: unknown): T {
-  if (!isRecord(base) || !isRecord(override))
-    return structuredClone(override === undefined ? base : override) as T;
-  const out: Record<string, unknown> = {};
-  for (const key of Object.keys(base))
-    out[key] = merge(base[key], override[key]);
-  return out as T;
-}
 
 const FILES = import.meta.glob<unknown>("../config/effects/*.json", {
   eager: true,

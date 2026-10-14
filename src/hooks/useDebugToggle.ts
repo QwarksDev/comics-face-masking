@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-
-function isTyping(target: EventTarget | null) {
-  return (
-    target instanceof HTMLInputElement ||
-    target instanceof HTMLTextAreaElement ||
-    target instanceof HTMLSelectElement
-  );
-}
+import { isTyping } from "../utils/dom";
 
 export function useDebugToggle(key = "d"): [boolean, () => void] {
   const [open, setOpen] = useState(() =>
