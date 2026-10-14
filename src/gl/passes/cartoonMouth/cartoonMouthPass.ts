@@ -20,6 +20,8 @@ export type MouthArt = Record<MouthPose, Sprite>;
 
 export interface CartoonMouthParams {
   size: number;
+  foreshortening: number;
+  depth: number;
   offset: Vec2;
   openRange: Vec2;
   openSquash: Vec2;
@@ -36,6 +38,8 @@ export interface CartoonMouthParams {
 
 export const CARTOON_MOUTH_DEFAULTS: CartoonMouthParams = {
   size: 1,
+  foreshortening: 1,
+  depth: 0,
   offset: [0, -0.28],
   openRange: [0.02, 0.25],
   openSquash: [0.45, 1.2],
@@ -210,6 +214,8 @@ export function cartoonMouthPass(
         gl.useProgram(program);
         gl.uniform1f(loc("u_size"), params.size);
         gl.uniform2fv(loc("u_offset"), params.offset);
+        gl.uniform1f(loc("u_foreshortening"), params.foreshortening);
+        gl.uniform1f(loc("u_depth"), params.depth);
         gl.uniform2fv(loc("u_resolution"), frame.resolution);
         for (const face of frame.faces) {
           const { slot } = face;

@@ -1,10 +1,10 @@
 {
   "faceBlur": {
     "enabled": true,
-    "sigma": 40,
-    "padding": 0.25,
-    "feather": 0.75,
-    "downsample": 0.5
+    "sigma": 65,
+    "padding": -0.08,
+    "feather": 0.8,
+    "downsample": 0.45
   },
   "posterize": {
     "enabled": false,
@@ -33,6 +33,7 @@
     "size": 0.5,
     "aspect": 1.35,
     "foreshortening": 0,
+    "depth": 0,
     "offset": [0, 0],
     "pupilSize": [0.42, 0.5],
     "gazeRange": [0.45, 0.4],
@@ -54,6 +55,8 @@
   "cartoonMouth": {
     "enabled": true,
     "size": 1,
+    "foreshortening": 1,
+    "depth": 0,
     "offset": [0, -0.28],
     "openRange": [0.02, 0.25],
     "openSquash": [0.45, 1.2],

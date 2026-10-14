@@ -68,6 +68,7 @@ export const DEBUG_SCHEMA: { [S in SectionName]: SectionSchema<S> } = {
       size: num(0.1, 2, 0.01),
       aspect: num(0.5, 3, 0.01),
       foreshortening: num(0, 1, 0.01),
+      depth: num(-1, 1, 0.01),
       offset: vec2(-1, 1, 0.01),
       pupilSize: vec2(0, 1, 0.01),
       gazeRange: vec2(0, 1, 0.01),
@@ -91,6 +92,8 @@ export const DEBUG_SCHEMA: { [S in SectionName]: SectionSchema<S> } = {
     label: "Cartoon mouth",
     fields: {
       size: num(0.1, 3, 0.01),
+      foreshortening: num(0, 1, 0.01),
+      depth: num(-1, 1, 0.01),
       offset: vec2(-1, 1, 0.01),
       openRange: vec2(0, 1, 0.005),
       openSquash: vec2(0, 2, 0.01),

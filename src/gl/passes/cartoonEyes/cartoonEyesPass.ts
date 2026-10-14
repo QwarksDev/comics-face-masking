@@ -19,6 +19,7 @@ export interface CartoonEyesParams {
   size: number;
   aspect: number;
   foreshortening: number;
+  depth: number;
   offset: Vec2;
   pupilSize: Vec2;
   gazeRange: Vec2;
@@ -42,6 +43,7 @@ export const CARTOON_EYES_DEFAULTS: CartoonEyesParams = {
   size: 0.5,
   aspect: 1.35,
   foreshortening: 0,
+  depth: 0,
   offset: [0, 0],
   pupilSize: [0.42, 0.5],
   gazeRange: [0.45, 0.4],
@@ -167,6 +169,7 @@ export function cartoonEyesPass(
         gl.uniform1f(loc("u_size"), params.size);
         gl.uniform1f(loc("u_aspect"), params.aspect);
         gl.uniform1f(loc("u_foreshortening"), params.foreshortening);
+        gl.uniform1f(loc("u_depth"), params.depth);
         gl.uniform2fv(loc("u_offset"), params.offset);
         gl.uniform2fv(loc("u_pupilSize"), params.pupilSize);
         gl.uniform2fv(loc("u_gazeRange"), params.gazeRange);
