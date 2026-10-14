@@ -1,20 +1,15 @@
-import { useEffect, useState } from "react";
-import { isTyping } from "../utils/dom";
+import { useCallback, useState } from "react";
+import { useKeyPress } from "./useKeyPress";
 
 export function useDebugToggle(key = "d"): [boolean, () => void] {
   const [open, setOpen] = useState(() =>
     new URLSearchParams(window.location.search).has("debug"),
   );
 
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== key || e.metaKey || e.ctrlKey || e.altKey) return;
-      if (isTyping(e.target)) return;
-      setOpen((o) => !o);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [key]);
+  useKeyPress(
+    key,
+    useCallback(() => setOpen((o) => !o), []),
+  );
 
   return [open, () => setOpen(false)];
 }

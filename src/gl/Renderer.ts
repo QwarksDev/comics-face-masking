@@ -6,7 +6,10 @@ import { TargetPool } from "./resources/TargetPool";
 import { VideoTexture } from "./resources/VideoTexture";
 import { COPY_VIDEO_FS } from "./shaders/copyVideo.frag";
 import { FULLSCREEN_VS } from "./shaders/fullscreen.vert";
-import type { Draw, Frame, Pass, SlotFace } from "./types";
+import { PRESENT_FS } from "./shaders/present.frag";
+import type { Draw, Frame, Pass, SlotFace, Vec4 } from "./types";
+
+const FULL_VIEW: Vec4 = [0, 0, 1, 1];
 
 function createContext(canvas: HTMLCanvasElement): WebGL2RenderingContext {
   const gl = canvas.getContext("webgl2", {
@@ -28,6 +31,8 @@ export class Renderer {
   private readonly compiled = new Map<Pass, Draw>();
   private readonly emptyVao: WebGLVertexArrayObject | null;
   private readonly copyProgram: WebGLProgram;
+  private readonly presentProgram: WebGLProgram;
+  private readonly presentView: WebGLUniformLocation | null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const gl = (this.gl = createContext(canvas));
@@ -41,13 +46,25 @@ export class Renderer {
       gl.getUniformLocation(this.copyProgram, "u_video"),
       UNIT.video,
     );
+    this.presentProgram = createProgram(gl, FULLSCREEN_VS, PRESENT_FS);
+    gl.useProgram(this.presentProgram);
+    gl.uniform1i(
+      gl.getUniformLocation(this.presentProgram, "u_input"),
+      UNIT.input,
+    );
+    this.presentView = gl.getUniformLocation(this.presentProgram, "u_view");
   }
 
   setFaces(slots: readonly (SlotFace | null)[]) {
     this.landmarks.update(slots);
   }
 
-  render(source: HTMLVideoElement, passes: readonly Pass[], time: number) {
+  render(
+    source: HTMLVideoElement,
+    passes: readonly Pass[],
+    time: number,
+    view: Vec4 = FULL_VIEW,
+  ) {
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE0 + UNIT.video);
     if (!this.video.upload(source)) return;
@@ -84,7 +101,7 @@ export class Renderer {
       gl.bindVertexArray(this.emptyVao);
     }
 
-    this.present(src);
+    this.present(src, view);
   }
 
   dispose() {
@@ -92,6 +109,7 @@ export class Renderer {
     this.landmarks.dispose();
     this.targets.dispose();
     this.gl.deleteProgram(this.copyProgram);
+    this.gl.deleteProgram(this.presentProgram);
     this.gl.deleteVertexArray(this.emptyVao);
   }
 
@@ -134,24 +152,14 @@ export class Renderer {
     gl.disable(gl.BLEND);
   }
 
-  private present(target: RenderTarget) {
+  private present(target: RenderTarget, view: Vec4) {
     const gl = this.gl;
-    const { width, height } = target;
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, target.framebuffer);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-    gl.blitFramebuffer(
-      0,
-      0,
-      width,
-      height,
-      0,
-      0,
-      width,
-      height,
-      gl.COLOR_BUFFER_BIT,
-      gl.NEAREST,
-    );
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.activeTexture(gl.TEXTURE0 + UNIT.input);
+    gl.bindTexture(gl.TEXTURE_2D, target.texture);
+    gl.useProgram(this.presentProgram);
+    gl.uniform4fv(this.presentView, view);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
   private compile(pass: Pass): Draw {
