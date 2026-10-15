@@ -6,6 +6,7 @@ import { ZOOM } from "../../config/zoom";
 import type { Pass } from "../../gl/types";
 import { useFaceLandmarker } from "../../hooks/useFaceLandmarker";
 import { useKeyPress } from "../../hooks/useKeyPress";
+import { useRemoteCommand } from "../../hooks/useRemoteCommand";
 import { useRenderLoop } from "../../hooks/useRenderLoop";
 import styles from "./EffectsView.module.css";
 
@@ -26,6 +27,14 @@ export function EffectsView({
   useKeyPress(
     ZOOM.key,
     useCallback(() => camera.toggle(), [camera]),
+  );
+  useRemoteCommand(
+    useCallback(
+      (command) => {
+        if (command.type === "zoom") camera.toggle();
+      },
+      [camera],
+    ),
   );
   useRenderLoop(canvasRef, webcamRef, landmarker, passes, camera);
 

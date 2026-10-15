@@ -21,7 +21,8 @@ src/
   config/effects/          effect presets (default.json + any others)
   debug/schema.ts          debug panel controls (ranges/steps per setting)
   tracking/                face landmarker setup, stable face slots (FaceTracker), connection sets
-  hooks/                   useFaceLandmarker, useRenderLoop
+  hooks/                   useFaceLandmarker, useRenderLoop, useRemoteCommand
+  remote/protocol.ts       remote control commands shared by server and page
   components/EffectsView/  hidden webcam + output canvas
   gl/
     Renderer.ts            runs the pass stack and presents to the canvas
@@ -30,6 +31,8 @@ src/
     resources/             video texture, landmark texture, render target pool
     shaders/               shared GLSL (fullscreen triangle, pass header)
     passes/                one folder per effect, GLSL in *.frag.ts / *.vert.ts
+plugins/
+  remoteControl.ts         dev-server endpoint relaying remote commands to the page
 ```
 
 ## Tuning settings
@@ -48,6 +51,34 @@ open the page with `?debug`) to show the debug panel:
 
 A preset file only needs the values it changes; anything missing falls back to
 the pass's built-in defaults.
+
+## Using it as a webcam (OBS)
+
+Open the page with `?output` for a clean feed: transparent background, canvas
+fitted to the window (combine with `?debug` if needed).
+
+1. Run `npm run dev`.
+2. Launch OBS with media access so browser sources can use the webcam:
+   `open -a OBS --args --enable-media-stream`.
+3. Add a **Browser Source** with URL `http://localhost:5173/?output`, size
+   1920×1080. Prefer it over capturing a Chrome window, which throttles
+   rendering when hidden.
+4. Click **Start Virtual Camera**; other apps can now pick _OBS Virtual Camera_.
+
+## Remote control (Stream Deck)
+
+The dev server accepts GET requests that are forwarded to every open copy of
+the page, OBS browser source included:
+
+| URL (`http://localhost:5173/remote/…`) | Effect                                   |
+| -------------------------------------- | ---------------------------------------- |
+| `zoom`                                 | toggle zoom on the face (same as `Z`)    |
+| `preset/<name>`                        | apply a preset, e.g. `preset/round-eyes` |
+| `next-preset` / `previous-preset`      | cycle through presets                    |
+
+On a Stream Deck, use **System → Website** with one of these URLs and tick
+**GET request in background**. Only available with `npm run dev`, not with
+`vite preview` or a production build.
 
 ## Writing a pass
 

@@ -12,6 +12,7 @@ import {
   setParam,
 } from "../../effects/config";
 import { type AnyControl, DEBUG_SCHEMA } from "../../debug/schema";
+import { useRemoteCommand } from "../../hooks/useRemoteCommand";
 import { Field } from "./Field";
 import { download } from "../../utils/dom";
 import styles from "./DebugPanel.module.css";
@@ -27,6 +28,7 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
   const [status, setStatus] = useState("");
   const sections = Object.keys(DEBUG_SCHEMA) as SectionName[];
   const preset = activePreset();
+  useRemoteCommand(refresh);
 
   const update = (section: SectionName, key: string, value: unknown) => {
     setParam(section, key as never, value as never);

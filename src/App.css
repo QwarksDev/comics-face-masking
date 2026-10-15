@@ -5,3 +5,13 @@
   justify-content: center;
   background-color: #282c34;
 }
+
+.app.output {
+  height: 100vh;
+  background-color: transparent;
+}
+
+.app.output canvas {
+  height: 100%;
+  object-fit: contain;
+}

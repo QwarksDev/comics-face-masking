@@ -1,6 +1,6 @@
 export const SCREENSAVER = {
-  faceHeight: 0.35,
-  speed: 0.2,
+  faceHeight: 0.25,
+  speed: 0.1,
   maxStepSeconds: 0.1,
   lookInterval: [0.6, 1.8],
   lookRange: [0.55, 0.3],

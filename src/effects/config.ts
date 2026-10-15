@@ -86,7 +86,19 @@ export function applyConfig(source: unknown, preset: string | null = null) {
 }
 
 export function applyPreset(name: string) {
+  if (!(name in PRESETS)) return;
   applyConfig(PRESETS[name], name);
+}
+
+export function cyclePreset(step: 1 | -1) {
+  const names = Object.keys(PRESETS);
+  if (names.length === 0) return;
+  const current = active === null ? -1 : names.indexOf(active);
+  if (current < 0) {
+    applyPreset(step > 0 ? names[0] : names[names.length - 1]);
+    return;
+  }
+  applyPreset(names[(current + step + names.length) % names.length]);
 }
 
 export function resetConfig() {

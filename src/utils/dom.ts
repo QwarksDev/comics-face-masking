@@ -16,3 +16,7 @@ export function isTyping(target: EventTarget | null) {
     target instanceof HTMLSelectElement
   );
 }
+
+export function hasQueryFlag(name: string) {
+  return new URLSearchParams(window.location.search).has(name);
+}
