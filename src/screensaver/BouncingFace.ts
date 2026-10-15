@@ -1,8 +1,8 @@
 import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 import { SCREENSAVER } from "../config/screensaver";
 import type { Vec2 } from "../gl/types";
-import { faceBox } from "../tracking/faceBox";
 import type { TrackedFace } from "../tracking/FaceTracker";
+import { randomBetween, randomSign } from "../utils/random";
 import { type FaceTemplate, frontalize } from "./frontalize";
 import { IdleExpression } from "./IdleExpression";
 
@@ -17,10 +17,6 @@ interface Bounce {
   velocity: Vec2;
   expression: IdleExpression;
   happyUntil: number;
-}
-
-function randomSign() {
-  return Math.random() < 0.5 ? -1 : 1;
 }
 
 export class BouncingFace {
@@ -73,16 +69,23 @@ export class BouncingFace {
     resolution: Vec2,
     time: number,
   ): Bounce {
-    const [width, height] = resolution;
-    const { cx, cy } = faceBox(landmarks);
-    const speed = SCREENSAVER.speed * height;
+    const template = frontalize(landmarks, resolution, SCREENSAVER.faceHeight);
+    const speed = SCREENSAVER.speed * resolution[1];
     return {
-      template: frontalize(landmarks, resolution, SCREENSAVER.faceHeight),
-      position: [cx * width, cy * height],
+      template,
+      position: this.randomPosition(template, resolution),
       velocity: [speed * randomSign(), speed * randomSign()],
       expression: new IdleExpression(time),
       happyUntil: -Infinity,
     };
+  }
+
+  private randomPosition(template: FaceTemplate, resolution: Vec2): Vec2 {
+    const [x, y] = [0, 1].map((axis) => {
+      const min = template.halfSize[axis];
+      return randomBetween([min, Math.max(min, resolution[axis] - min)]);
+    });
+    return [x, y];
   }
 
   private step(bounce: Bounce, seconds: number, resolution: Vec2): boolean {

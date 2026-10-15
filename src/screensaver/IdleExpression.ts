@@ -1,12 +1,9 @@
 import { SCREENSAVER } from "../config/screensaver";
 import type { Vec2 } from "../gl/types";
 import { BLENDSHAPE, BLENDSHAPES } from "../tracking/detection";
+import { randomBetween } from "../utils/random";
 
 export type Mood = "searching" | "surprised" | "happy";
-
-function randomBetween([min, max]: readonly [number, number]) {
-  return min + Math.random() * (max - min);
-}
 
 function randomGaze(): Vec2 {
   const [rangeX, rangeY] = SCREENSAVER.lookRange;
