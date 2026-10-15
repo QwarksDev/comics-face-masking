@@ -8,11 +8,13 @@ export interface SlotFace {
   landmarks: readonly NormalizedLandmark[];
   blendshapes: Float32Array;
   held: boolean;
+  idle: boolean;
 }
 
 export interface ActiveFace {
   slot: number;
   held: boolean;
+  idle: boolean;
   landmarks: readonly NormalizedLandmark[];
   blendshapes: Float32Array;
 }

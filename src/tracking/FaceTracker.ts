@@ -4,6 +4,7 @@ import type { Detection } from "./detection";
 
 export interface TrackedFace extends Detection {
   held: boolean;
+  idle: boolean;
 }
 
 interface Track extends TrackedFace {
@@ -61,7 +62,7 @@ export class FaceTracker {
   }
 
   private track(detection: Detection, box: FaceBox, now: number): Track {
-    return { ...detection, box, lastSeen: now, held: false };
+    return { ...detection, box, lastSeen: now, held: false, idle: false };
   }
 
   private freeSlot(seen: ReadonlySet<number>): number {

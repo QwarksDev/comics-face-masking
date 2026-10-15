@@ -4,6 +4,8 @@ import type { ActiveFace, SlotFace } from "../types";
 
 export const NUM_LANDMARKS = 478;
 export const MAX_FACES = TRACKING.maxFaces;
+const LIVE_MARKER = 1;
+const IDLE_MARKER = -1;
 
 export class LandmarkTexture {
   readonly texture: WebGLTexture;
@@ -24,6 +26,7 @@ export class LandmarkTexture {
         active.push({
           slot,
           held: face.held,
+          idle: face.idle,
           landmarks: face.landmarks,
           blendshapes: face.blendshapes,
         });
@@ -56,12 +59,13 @@ export class LandmarkTexture {
       data.fill(0, o, o + NUM_LANDMARKS * 4);
       return;
     }
+    const marker = face.idle ? IDLE_MARKER : LIVE_MARKER;
     for (let i = 0; i < NUM_LANDMARKS; i++) {
       const p = face.landmarks[i];
       data[o++] = p.x;
       data[o++] = p.y;
       data[o++] = p.z;
-      data[o++] = 1;
+      data[o++] = marker;
     }
   }
 }

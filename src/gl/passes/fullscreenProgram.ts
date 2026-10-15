@@ -31,7 +31,10 @@ export function createFullscreenProgram(
     gl.useProgram(program);
     gl.uniform2fv(loc("u_resolution"), frame.resolution);
     gl.uniform1f(loc("u_time"), frame.time);
-    gl.uniform1i(loc("u_faceCount"), frame.faces.length);
+    gl.uniform1i(
+      loc("u_faceCount"),
+      frame.faces.filter((face) => !face.idle).length,
+    );
   };
   return { program, loc, use };
 }

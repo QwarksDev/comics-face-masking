@@ -108,7 +108,7 @@ export function cartoonMouthPass(
   let lastLog = -Infinity;
 
   const signals = (
-    { landmarks, blendshapes: b }: ActiveFace,
+    { landmarks, blendshapes: b, idle }: ActiveFace,
     resolution: Vec2,
     out: Float32Array,
   ) => {
@@ -124,11 +124,13 @@ export function cartoonMouthPass(
     const [dimpleR, dimpleL] = sides("mouthDimple");
     const pucker = b[BLENDSHAPE.mouthPucker];
     const funnel = b[BLENDSHAPE.mouthFunnel];
-    out[OPEN] = smoothstep(
-      params.openRange[0],
-      params.openRange[1],
-      lipGap(landmarks, resolution),
-    );
+    out[OPEN] = idle
+      ? b[BLENDSHAPE.jawOpen]
+      : smoothstep(
+          params.openRange[0],
+          params.openRange[1],
+          lipGap(landmarks, resolution),
+        );
     out[SMILE] = (smileR + smileL) / 2;
     out[SMIRK] = smileL - smileR + (dimpleL - dimpleR) + (moveL - moveR) * 0.5;
     out[FROWN] = (frownR + frownL) / 2 + b[BLENDSHAPE.mouthShrugLower] * 0.5;

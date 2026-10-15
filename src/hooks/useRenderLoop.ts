@@ -6,6 +6,7 @@ import { TRACKING } from "../config/tracking";
 import { Renderer } from "../gl/Renderer";
 import type { Pass } from "../gl/types";
 import { toDetections } from "../tracking/detection";
+import { BouncingFace } from "../screensaver/BouncingFace";
 import { FaceTracker } from "../tracking/FaceTracker";
 
 export function useRenderLoop(
@@ -25,6 +26,7 @@ export function useRenderLoop(
       graceMs: TRACKING.graceMs,
       maxMatchDistance: TRACKING.maxMatchDistance,
     });
+    const bouncingFace = new BouncingFace();
     let lastVideoTime = -1;
     let rafId = 0;
 
@@ -38,9 +40,14 @@ export function useRenderLoop(
         lastVideoTime = video.currentTime;
         const now = performance.now();
         const result = landmarker.detectForVideo(video, now);
-        const faces = tracker.update(toDetections(result), now);
-        renderer.setFaces(faces);
-        renderer.render(video, passes, now / 1000, camera.update(faces, now));
+        const tracked = tracker.update(toDetections(result), now);
+        renderer.setFaces(
+          bouncingFace.update(tracked, now, [
+            video.videoWidth,
+            video.videoHeight,
+          ]),
+        );
+        renderer.render(video, passes, now / 1000, camera.update(tracked, now));
       }
       rafId = requestAnimationFrame(tick);
     };
