@@ -2,8 +2,8 @@
   "faceBlur": {
     "enabled": true,
     "sigma": 65,
-    "padding": -0.08,
-    "feather": 0.8,
+    "padding": 0.1,
+    "feather": 0.45,
     "downsample": 0.45
   },
   "posterize": {
@@ -30,16 +30,16 @@
   },
   "cartoonEyes": {
     "enabled": true,
-    "size": 0.69,
+    "size": 0.6,
     "aspect": 1,
     "foreshortening": 0,
     "depth": 0,
     "offset": [0, 0],
-    "pupilSize": [0.8, 0.8],
+    "pupilSize": [0.7, 0.7],
     "gazeRange": [0.45, 0.4],
     "gazeGain": [1.8, 1.8],
     "blinkRange": [0.3, 0.5],
-    "squintRange": [0.4, 0.5],
+    "squintRange": [0.5, 0.8],
     "wideGain": 0.2,
     "closedLid": -0.2,
     "lidCurve": 0.4,
@@ -71,7 +71,7 @@
     "thresholds": {
       "round": 0.4,
       "roundMaxSmile": 0.3,
-      "open": 0.12,
+      "open": 0.01,
       "grinSmile": 0.35,
       "smirk": 0.15,
       "smirkSmileRatio": 0.6,

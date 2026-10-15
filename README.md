@@ -67,6 +67,13 @@ fitted to the window (combine with `?debug` if needed).
    rendering when hidden.
 4. Click **Start Virtual Camera**; other apps can now pick _OBS Virtual Camera_.
 
+OBS browser sources have no camera picker and use the system default. Add
+`camera=<name>` to pin a specific one, e.g.
+`http://localhost:5173/?output&camera=FaceTime`: the first camera whose name
+contains that text (case-insensitive) is used, and if none matches the page
+shows an error listing the available cameras instead of falling back to another
+one. Camera names are listed in OBS under _Add Source → Video Capture Device_.
+
 ### Control page
 
 OBS browser sources are awkward to interact with, so open

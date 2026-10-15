@@ -20,3 +20,7 @@ export function isTyping(target: EventTarget | null) {
 export function hasQueryFlag(name: string) {
   return new URLSearchParams(window.location.search).has(name);
 }
+
+export function queryParam(name: string) {
+  return new URLSearchParams(window.location.search).get(name);
+}

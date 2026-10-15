@@ -2,8 +2,8 @@
   "faceBlur": {
     "enabled": true,
     "sigma": 65,
-    "padding": -0.08,
-    "feather": 0.8,
+    "padding": 0.1,
+    "feather": 0.45,
     "downsample": 0.45
   },
   "posterize": {
