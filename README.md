@@ -23,7 +23,9 @@ src/
   tracking/                face landmarker setup, stable face slots (FaceTracker), connection sets
   hooks/                   useFaceLandmarker, useRenderLoop, useRemoteCommand
   remote/protocol.ts       remote control commands shared by server and page
+  remote/sync.ts           settings sync between the control page and outputs
   components/EffectsView/  hidden webcam + output canvas
+  components/ControlPage/  ?control page driving the OBS output
   gl/
     Renderer.ts            runs the pass stack and presents to the canvas
     types.ts               Pass / Frame contracts
@@ -64,6 +66,20 @@ fitted to the window (combine with `?debug` if needed).
    1920×1080. Prefer it over capturing a Chrome window, which throttles
    rendering when hidden.
 4. Click **Start Virtual Camera**; other apps can now pick _OBS Virtual Camera_.
+
+### Control page
+
+OBS browser sources are awkward to interact with, so open
+`http://localhost:5173/?control` in a regular browser next to OBS. It shows the
+debug panel full-page, without the webcam, and every change is sent live to all
+open output pages (the OBS source included):
+
+- presets, toggles and parameters apply immediately in OBS;
+- **Toggle zoom** zooms on the face;
+- opening the control page pulls the current settings from OBS, and reloading
+  the OBS source pulls them back from the control page.
+
+Like remote control, this needs `npm run dev`.
 
 ## Remote control (Stream Deck)
 

@@ -24,6 +24,9 @@ export function remoteControl(): Plugin {
     name: "remote-control",
     apply: "serve",
     configureServer(server) {
+      server.ws.on(REMOTE_EVENT, (command: RemoteCommand) =>
+        server.ws.send(REMOTE_EVENT, command),
+      );
       server.middlewares.use(ROUTE, (req, res) => {
         const command = parseCommand(req.url ?? "");
         if (command) server.ws.send(REMOTE_EVENT, command);

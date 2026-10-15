@@ -1,4 +1,4 @@
-import { type ChangeEvent, useReducer, useState } from "react";
+import { type ChangeEvent, type ReactNode, useReducer, useState } from "react";
 import {
   activePreset,
   applyConfig,
@@ -20,11 +20,25 @@ import styles from "./DebugPanel.module.css";
 const CUSTOM = "";
 
 interface DebugPanelProps {
-  onClose: () => void;
+  title?: string;
+  embedded?: boolean;
+  onClose?: () => void;
+  onConfigChange?: () => void;
+  children?: ReactNode;
 }
 
-export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
+export function DebugPanel({
+  title = "Debug",
+  embedded = false,
+  onClose,
+  onConfigChange,
+  children,
+}: Readonly<DebugPanelProps>) {
   const [, refresh] = useReducer((n: number) => n + 1, 0);
+  const changed = () => {
+    onConfigChange?.();
+    refresh();
+  };
   const [status, setStatus] = useState("");
   const sections = Object.keys(DEBUG_SCHEMA) as SectionName[];
   const preset = activePreset();
@@ -32,7 +46,7 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
 
   const update = (section: SectionName, key: string, value: unknown) => {
     setParam(section, key as never, value as never);
-    refresh();
+    changed();
   };
 
   const importFile = async (e: ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +59,7 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
     } catch (err) {
       setStatus(`Import failed: ${(err as Error).message}`);
     }
-    refresh();
+    changed();
   };
 
   const copy = async () => {
@@ -58,12 +72,16 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
   };
 
   return (
-    <aside className={styles.panel}>
+    <aside
+      className={embedded ? `${styles.panel} ${styles.embedded}` : styles.panel}
+    >
       <header className={styles.header}>
-        <strong>Debug</strong>
-        <button type="button" title="Close (D)" onClick={onClose}>
-          ×
-        </button>
+        <strong>{title}</strong>
+        {onClose && (
+          <button type="button" title="Close (D)" onClick={onClose}>
+            ×
+          </button>
+        )}
       </header>
       <label className={styles.preset}>
         <span>Preset</span>
@@ -72,7 +90,7 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
           onChange={(e) => {
             applyPreset(e.target.value);
             setStatus("");
-            refresh();
+            changed();
           }}
         >
           {preset === null && (
@@ -108,11 +126,12 @@ export function DebugPanel({ onClose }: Readonly<DebugPanelProps>) {
           onClick={() => {
             resetConfig();
             setStatus("Reset to default");
-            refresh();
+            changed();
           }}
         >
           Reset
         </button>
+        {children}
       </div>
       {status && <p className={styles.status}>{status}</p>}
       {sections.map((section) => {
